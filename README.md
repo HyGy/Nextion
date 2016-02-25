@@ -9,9 +9,11 @@ http://wiki.iteadstudio.com/Nextion_HMI_Solution
 How to initialize the lib:
 --------------------------
 
+```
 Serial1.setup(9600);
 var nextion=require('Nextion');
 nextion.connect(Serial1);
+```
 
 # recived events
 
