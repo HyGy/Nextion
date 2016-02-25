@@ -39,7 +39,7 @@ exports.setPage = function(pageNum) {
 
 /** Set the given page */
 exports.getAtt = function(att) {
-  this.serialPort.print('get att' + att + '\xff\xff\xff');
+  this.serialPort.print('get ' + att + '\xff\xff\xff');
 };
 
 exports.sendme = function() {
@@ -81,8 +81,8 @@ exports.commandRecived = function() {
     case 0X70: // String variable data returns
       console.log('String variable data returns');
       var stringToSend = "";
-      for (var cikl = 0; cikl < lastNextionCommand.length; cikl++) {
-        stringToSend += lastNextionCommand[cikl];
+      for (var cikl = 1; cikl < lastNextionCommand.length; cikl++) {
+        stringToSend += E.toString(lastNextionCommand[cikl]);
       }
 
       me.emit(
