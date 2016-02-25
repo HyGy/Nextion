@@ -25,85 +25,109 @@ nextion.on(
 );
 */
 
-var C = {
-};
+var C = {};
 
-function NEXTION() {
-}
+function NEXTION() { }
 
 /** 'public' constants here */
-NEXTION.prototype.C = {
+NEXTION.prototype.C = {};
+
+/** Set the given page */
+exports.setPage = function(pageNum) {
+  this.serialPort.print('page ' + pageNum + '\xff\xff\xff');
 };
 
 /** Set the given page */
-exports.setPage = function (pageNum)
-{
-  this.serialPort.print('page '+pageNum+'\xff\xff\xff');
+exports.getAtt = function(att) {
+  this.serialPort.print('get att' + att + '\xff\xff\xff');
 };
 
-/** Set the given page */
-exports.getAtt = function (att)
-{
-  this.serialPort.print('get att'+att+'\xff\xff\xff');
-};
-
-exports.sendme = function ()
-{
+exports.sendme = function() {
   this.serialPort.print('sendme\xff\xff\xff');
 }
 
 /** Put most of my comments outside the functions... */
-exports.commandRecived = function(lastNextionCommand) {
+exports.commandRecived = function() {
+
+  var lastNextionCommand=this.lastNextionCommand;
+
   var me = this;
   console.log('nextionCommandRecived called');
   console.log(lastNextionCommand);
-     switch (lastNextionCommand[0])
-     {
-       case 0x1a: // variable name is invalid
-         console.log('0x1a: variable name is invalid');
-         break;
-       case 0x65: // touch event
-         console.log('touch event');
-         me.emit(
-           'touchevent',
-           lastNextionCommand[1], // pageId
-           lastNextionCommand[2], // componentId
-           lastNextionCommand[3]===0x0 ? 'release' : 'press' // touchEvent press: 0x01, release 0x00
-         );
-         break;
-       case 0x00:
-         console.log('0x00: Invalid instruction sent.');
-         break;
+  switch (lastNextionCommand[0]) {
+    case 0x1a: // variable name is invalid
+      console.log('0x1a: variable name is invalid');
+      break;
+    case 0x65: // touch event
+      console.log('touch event');
+      me.emit(
+        'touchevent',
+        lastNextionCommand[1], // pageId
+        lastNextionCommand[2], // componentId
+        lastNextionCommand[3] === 0x0 ? 'release' : 'press' // touchEvent press: 0x01, release 0x00
+      );
+      break;
+    case 0x00:
+      console.log('0x00: Invalid instruction sent.');
+      break;
 
-       case 0x66: // Current page ID number returns
-         me.emit(
-           'getpageid',
-           lastNextionCommand[1]
-         );
-         break;
+    case 0x66: // Current page ID number returns
+      me.emit(
+        'getpageid',
+        lastNextionCommand[1]
+      );
+      break;
 
-       case 0X70: // String variable data returns
-         console.log('String variable data returns');
-         var stringToSend="";
-         for (var cikl=0; cikl<lastNextionCommand.length; cikl++)
-         {
-           stringToSend+=lastNextionCommand[cikl];
-         }
+    case 0X70: // String variable data returns
+      console.log('String variable data returns');
+      var stringToSend = "";
+      for (var cikl = 0; cikl < lastNextionCommand.length; cikl++) {
+        stringToSend += lastNextionCommand[cikl];
+      }
 
-         me.emit(
-           'stringdatareturned',
-           stringToSend
-         );
-         break;
+      me.emit(
+        'stringdatareturned',
+        stringToSend
+      );
+      break;
 
-       default:
-         console.log('unknown command started with: 0x' + lastNextionCommand[0].toString(16));
-     }
+    default:
+      console.log('unknown command started with: 0x' + lastNextionCommand[0].toString(16));
+  }
 
 };
 
-exports.connect = function(_port)
-{
-  this.serialPort=_port;
+var dataArrived = function(_data) {
+  var c;
+
+  for (var cikl = 0; cikl < _data.length; cikl++) {
+    c = _data[cikl];
+
+    if (c == "\xff") {
+      this.instructionEndCount++;
+    } else {
+      this.nextionCommandCollector.push(c);
+    }
+
+    if (this.instructionEndCount == 3) {
+      this.instructionEndCount = 0;
+      this.lastNextionCommand = E.toUint8Array(this.nextionCommandCollector);
+      this.nextionCommandCollector = [];
+      this.commandRecived();
+    }
+  }
+};
+
+exports.connect = function(_port) {
+
+  var me=this;
+
+  this.serialPort = _port;
+  this.instructionEndCount=0;
+  this.nextionCommandCollector=[];
+  this.lastNextionCommand=[];
+
+  Serial1.on('data', dataArrived.bind(me));
+
   return new NEXTION();
 }
