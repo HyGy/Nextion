@@ -9,6 +9,8 @@ http://wiki.iteadstudio.com/Nextion_HMI_Solution
 How to initialize the lib:
 --------------------------
 
+This is tested on ESP8266. You need to connect the ESP8266 trough network console. Serial console is needed for the nextion lcd.
+
 ```
 Serial1.setup(9600);
 var nextion=require('Nextion');
