@@ -11,9 +11,9 @@ What is working now:
 
 var nextion=require('Nextion');
 
-// all nextion command ended with 0xff 0xff 0xff
-// when a new command recived, then give it to this call
-// this waits a byte array without the 3 0xff colosing bytes
+- all nextion command ended with 0xff 0xff 0xff
+- when a new command recived, then give it to this call
+- this waits a byte array without the 3 0xff colosing bytes
 nextion.nextionCommandRecived(lastNextionCommand);
 
 nextion.on(
