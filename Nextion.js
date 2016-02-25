@@ -28,7 +28,7 @@ nextion.on(
 var C = {
 };
 
-function NEXTION(_port) {
+function NEXTION() {
 }
 
 /** 'public' constants here */
@@ -38,19 +38,18 @@ NEXTION.prototype.C = {
 /** Set the given page */
 exports.setPage = function (pageNum)
 {
-  console.log(this.serial);
-  Serial1.print('page '+pageNum+'\xff\xff\xff');
+  this.serialPort.print('page '+pageNum+'\xff\xff\xff');
 };
 
 /** Set the given page */
 exports.getAtt = function (att)
 {
-  Serial1.print('get att'+att+'\xff\xff\xff');
+  this.serialPort.print('get att'+att+'\xff\xff\xff');
 };
 
 exports.sendme = function ()
 {
-  Serial1.print('sendme\xff\xff\xff');
+  this.serialPort.print('sendme\xff\xff\xff');
 }
 
 /** Put most of my comments outside the functions... */
@@ -105,6 +104,6 @@ exports.commandRecived = function(lastNextionCommand) {
 
 exports.connect = function(_port)
 {
-  console.log(_port);
-  return new NEXTION(_port);
+  this.serialPort=_port;
+  return new NEXTION();
 }
