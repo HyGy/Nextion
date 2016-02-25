@@ -48,7 +48,6 @@ nextion.on(
 # commands to send
 
 setPage
-
 ```
 nextion.setPage(1);
 ```
@@ -59,7 +58,11 @@ nextion.getAtt("attr");
 ```
 
 sendme -> get the current page
-
 ```
 nextion.sendme();
+```
+
+get an element attributte
+```
+nextion.getAtt("t0.txt");
 ```
