@@ -16,6 +16,9 @@ var nextion=require('Nextion');
 - this waits a byte array without the 3 0xff colosing bytes
 nextion.commandRecived(lastNextionCommand);
 
+touch event:
+
+```
 nextion.on(
   'touchevent',
   function(pageId, componentId, touchType)
@@ -26,7 +29,10 @@ nextion.on(
     console.log(touchType);
   }
 );
+```
 
+getpageid
+```
 nextion.on(
   'getpageid',
   function (pageId)
@@ -34,3 +40,4 @@ nextion.on(
     console.log('getPageId-> pageId: '+pageId);
   }
 );
+```
