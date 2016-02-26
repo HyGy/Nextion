@@ -52,9 +52,14 @@ setPage
 nextion.setPage(1);
 ```
 
-getAtt
+get value
 ```
-nextion.getAtt("attr");
+nextion.get(
+  "t0.txt",
+  function(data) {
+    console.log("--->"+data+"<----");
+  }
+);
 ```
 
 sendme -> get the current page
@@ -65,4 +70,10 @@ nextion.sendme();
 get an element attributte
 ```
 nextion.getAtt("t0.txt");
+```
+
+set value
+```
+nextion.setVal('t0.txt', "example string"); // set t0.txt value to "example string"
+nextion.setVal('dim',50); // set the backlight to 50%
 ```
