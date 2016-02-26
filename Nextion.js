@@ -2,27 +2,6 @@
 /*
 This is a basic nextion hmi lcd handling module. Tested with NX3224T028_011R  2.8”	320*240	LCD.
 http://wiki.iteadstudio.com/Nextion_HMI_Solution
-
-What is working now:
---------------------
-
-var nextion=require('Nextion');
-
-// all nextion command ended with 0xff 0xff 0xff
-// when a new command recived, then give it to this call
-// this waits a byte array without the 3 0xff colosing bytes
-nextion.nextionCommandRecived(lastNextionCommand);
-
-nextion.on(
-  'touchevent',
-  function(pageId, componentId, touchType)
-  {
-    console.log('touch event');
-    console.log(pageId);
-    console.log(componentId);
-    console.log(touchType);
-  }
-);
 */
 
 var C = {};
@@ -38,13 +17,41 @@ exports.setPage = function(pageNum) {
 };
 
 /** Set the given page */
-exports.getAtt = function(att) {
+exports.get = function(att) {
   this.serialPort.print('get ' + att + '\xff\xff\xff');
 };
 
 exports.sendme = function() {
   this.serialPort.print('sendme\xff\xff\xff');
 }
+
+exports.refreshComponent = function(componentId) {
+  this.serialPort.print('ref '+componentId+'\xff\xff\xff');
+}
+
+// cov: variable type conversion
+exports.cov = function(att1, att2, length)
+{
+  this.serialPort.print('cov '+att1+','+att2+','+length+'\xff\xff\xff');
+}
+
+// enter touch calibration
+exports.touch_j = function ()
+{
+  this.serialPort.print('touch_j'+'\xff\xff\xff');
+}
+
+// sets the given variable, if new Val is string then send as string if number then send as number
+exports.setVal = function(varName, newVal) {
+  if (typeof(newVal)=='string')
+  {
+    this.serialPort.print(varName+'="'+newVal+'"'+'\xff\xff\xff');
+  }
+  else {
+    this.serialPort.print(varName+'='+newVal+'\xff\xff\xff');
+  }
+}
+
 
 /** Put most of my comments outside the functions... */
 exports.commandRecived = function() {
@@ -58,6 +65,10 @@ exports.commandRecived = function() {
     case 0x1a: // variable name is invalid
       console.log('0x1a: variable name is invalid');
       break;
+    case 0x1b: // variable name is invalid
+      console.log('0x1b: variable operation invalid');
+      break;
+
     case 0x65: // touch event
       console.log('touch event');
       me.emit(
@@ -90,6 +101,16 @@ exports.commandRecived = function() {
         stringToSend
       );
       break;
+
+      case 0X71: // Numeric data returns
+        console.log('Numeric variable data returns');
+        var numToSend = lastNextionCommand[1]+ (lastNextionCommand[2] << 8) + (lastNextionCommand[3] << 16) + (lastNextionCommand << 24);
+
+        me.emit(
+          'numericdatareturned',
+          numToSend
+        );
+        break;
 
     default:
       console.log('unknown command started with: 0x' + lastNextionCommand[0].toString(16));
@@ -126,6 +147,7 @@ exports.connect = function(_port) {
   this.instructionEndCount=0;
   this.nextionCommandCollector=[];
   this.lastNextionCommand=[];
+
 
   Serial1.on('data', dataArrived.bind(me));
 
